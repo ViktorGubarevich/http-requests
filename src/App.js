@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from "react";
 
 import JokeList from "./components/JokeList";
 import "./App.css";
+import AddJoke from "./components/AddJoke";
 
 function App() {
   // const dummyJokes = [
@@ -39,13 +40,25 @@ function App() {
 
     try {
       const response = await fetch(
-        "https://official-joke-api.appspot.com/random_ten"
+        "https://http-requests-7acc6-default-rtdb.firebaseio.com/jokes.json"
       );
       if (!response.ok) {
         throw new Error("Что-то пошло не так ...");
       }
       const data = await response.json();
-      setJokes(data);
+
+      const loadedJokes = [];
+
+      for (const key in data) {
+        loadedJokes.push({
+          id: key,
+          type: data[key].type,
+          setup: data[key].setup,
+          punchline: data[key].punchline,
+        });
+      }
+
+      setJokes(loadedJokes);
     } catch (e) {
       setError(e.message);
     }
@@ -56,9 +69,24 @@ function App() {
     fetchJokesHandler();
   }, [fetchJokesHandler]);
 
+  async function addJokeHandler(joke) {
+    const response = await fetch(
+      "https://http-requests-7acc6-default-rtdb.firebaseio.com/jokes.json",
+      {
+        method: "POST",
+        body: JSON.stringify(joke),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
+    const data = await response.json();
+    console.log(data);
+  }
+
   let content = <p>Шуток не найдено.</p>;
 
-  if (jokes.length > 0) {
+  if (jokes !== null && jokes !== undefined && jokes.length > 0) {
     content = <JokeList jokes={jokes} />;
   }
 
@@ -72,6 +100,9 @@ function App() {
 
   return (
     <>
+      <section>
+        <AddJoke onAddJoke={addJokeHandler} />
+      </section>
       <section>
         <button onClick={fetchJokesHandler}>Fetch Jokes</button>
       </section>
