@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 
 import JokeList from "./components/JokeList";
 import "./App.css";
@@ -19,10 +19,6 @@ function App() {
   //   },
   // ];
 
-  const [jokes, setJokes] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
-
   // function fetchJokesHandler() {
   //   fetch("https://official-joke-api.appspot.com/random_ten")
   //     .then((response) => {
@@ -33,7 +29,11 @@ function App() {
   //     });
   // }
 
-  async function fetchJokesHandler() {
+  const [jokes, setJokes] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const fetchJokesHandler = useCallback(async () => {
     setIsLoading(true);
     setError(null);
 
@@ -50,7 +50,11 @@ function App() {
       setError(e.message);
     }
     setIsLoading(false);
-  }
+  }, []);
+
+  useEffect(() => {
+    fetchJokesHandler();
+  }, [fetchJokesHandler]);
 
   let content = <p>Шуток не найдено.</p>;
 
